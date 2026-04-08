@@ -1,0 +1,15 @@
+{
+  "name": "Flutter Web Codespace",
+  "image": "ghcr.io/cirruslabs/flutter:stable",
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "dart-code.dart-code",
+        "dart-code.flutter"
+      ]
+    }
+  },
+  "forwardPorts": [8080],
+  "postCreateCommand": "sudo chown -R codespace:codespace /workspace && flutter config --enable-web && flutter upgrade"
+}
