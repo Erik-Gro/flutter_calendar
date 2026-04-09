@@ -10,6 +10,9 @@
       ]
     }
   },
+    "features": {
+    "ghcr.io/devcontainers/features/git-lfs:1": {}
+  },
   "forwardPorts": [8080],
   "postCreateCommand": "sudo chown -R codespace:codespace /workspace && flutter config --enable-web && flutter upgrade"
 }
