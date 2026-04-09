@@ -49,9 +49,9 @@ class _KalenderBlattState extends State<KalenderBlatt> {
       if (_activeRequestTag != requestTag) return;
 
       if (response.statusCode == 200) {
-        setState(
-          () => _events = json.decode(response.body)['events'].take(5).toList(),
-        );
+        setState(() {
+          _events = json.decode(response.body)['events'].take(5).toList();
+        });
       }
     } catch (e) {
       debugPrint("Fetch Error: $e");
@@ -65,124 +65,6 @@ class _KalenderBlattState extends State<KalenderBlatt> {
   void _showThemePicker() {
     showThemePickerBottomSheet(context, widget.themeController);
   }
-
-  // void _showThemePicker() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     backgroundColor: Colors.transparent,
-  //     isScrollControlled: true,
-  //     builder: (ctx) => ListenableBuilder(
-  //       listenable: widget.themeController,
-  //       builder: (ctx, _) {
-  //         final ctrl = widget.themeController;
-  //         final theme = ThemeManager.getThemeData(ctrl.currentTheme);
-  //         return AnimatedContainer(
-  //           duration: const Duration(milliseconds: 300),
-  //           padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-  //           decoration: BoxDecoration(
-  //             color: theme.scaffoldBackgroundColor,
-  //             borderRadius: const BorderRadius.vertical(
-  //               top: Radius.circular(28),
-  //             ),
-  //           ),
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Container(
-  //                 width: 40,
-  //                 height: 4,
-  //                 decoration: BoxDecoration(
-  //                   color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-  //                   borderRadius: BorderRadius.circular(2),
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 20),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                 children: [
-  //                   Text(
-  //                     "Design",
-  //                     style: TextStyle(
-  //                       fontSize: 22,
-  //                       fontWeight: FontWeight.bold,
-  //                       color: theme.colorScheme.primary,
-  //                     ),
-  //                   ),
-  //                   Row(
-  //                     children: [
-  //                       const Text(
-  //                         "Auto-Close",
-  //                         style: TextStyle(fontSize: 12),
-  //                       ),
-  //                       Switch(
-  //                         value: ctrl.autoClosePreference,
-  //                         onChanged: (val) => ctrl.setAutoClose(val),
-  //                         activeThumbColor: theme.colorScheme.primary,
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ],
-  //               ),
-  //               const SizedBox(height: 16),
-  //               Wrap(
-  //                 spacing: 10,
-  //                 runSpacing: 10,
-  //                 children: AppTheme.values.map((t) {
-  //                   final isSel = t == ctrl.currentTheme;
-  //                   final d = ThemeManager.themeDetails[t]!;
-  //                   return InkWell(
-  //                     onTap: () {
-  //                       ctrl.setTheme(t);
-  //                       if (ctrl.autoClosePreference) Navigator.pop(context);
-  //                     },
-  //                     borderRadius: BorderRadius.circular(16),
-  //                     child: AnimatedContainer(
-  //                       duration: const Duration(milliseconds: 200),
-  //                       width: 95,
-  //                       padding: const EdgeInsets.symmetric(vertical: 12),
-  //                       decoration: BoxDecoration(
-  //                         color: theme.cardTheme.color,
-  //                         borderRadius: BorderRadius.circular(16),
-  //                         border: Border.all(
-  //                           color: isSel
-  //                               ? theme.colorScheme.primary
-  //                               : Colors.transparent,
-  //                           width: 2,
-  //                         ),
-  //                       ),
-  //                       child: Column(
-  //                         children: [
-  //                           CircleAvatar(
-  //                             backgroundColor: d['color'],
-  //                             radius: 18,
-  //                             child: Icon(
-  //                               d['icon'],
-  //                               size: 16,
-  //                               color: Colors.white,
-  //                             ),
-  //                           ),
-  //                           const SizedBox(height: 8),
-  //                           Text(
-  //                             d['name'],
-  //                             style: TextStyle(
-  //                               fontSize: 11,
-  //                               fontWeight: FontWeight.w600,
-  //                               color: theme.colorScheme.onSurface,
-  //                             ),
-  //                           ),
-  //                         ],
-  //                       ),
-  //                     ),
-  //                   );
-  //                 }).toList(),
-  //               ),
-  //             ],
-  //           ),
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +133,7 @@ class _KalenderBlattState extends State<KalenderBlatt> {
       31,
     ).difference(_selectedDate).inDays;
     final holiday = CalendarLogic.isHoliday(_selectedDate);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -289,8 +172,12 @@ class _KalenderBlattState extends State<KalenderBlatt> {
   }
 
   Widget _buildCalendar() {
-    final days = DateUtils.getDaysInMonth(_viewDate.year, _viewDate.month);
-    final offset = DateTime(_viewDate.year, _viewDate.month, 1).weekday - 1;
+    final daysInMonth = DateUtils.getDaysInMonth(
+      _viewDate.year,
+      _viewDate.month,
+    );
+    final firstDayOffset =
+        DateTime(_viewDate.year, _viewDate.month, 1).weekday - 1;
     final theme = Theme.of(context);
 
     return Card(
@@ -328,7 +215,29 @@ class _KalenderBlattState extends State<KalenderBlatt> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: CalendarLogic.weekdaysHeader
+                  .map(
+                    (day) => Expanded(
+                      child: Center(
+                        child: Text(
+                          day,
+                          style: TextStyle(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.7,
+                            ),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 8),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -337,12 +246,14 @@ class _KalenderBlattState extends State<KalenderBlatt> {
                 mainAxisSpacing: 4,
                 crossAxisSpacing: 4,
               ),
-              itemCount: days + offset,
+              itemCount: daysInMonth + firstDayOffset,
               itemBuilder: (context, i) {
-                if (i < offset) return const SizedBox();
-                final d = i - offset + 1;
+                if (i < firstDayOffset) return const SizedBox();
+                final d = i - firstDayOffset + 1;
                 final date = DateTime(_viewDate.year, _viewDate.month, d);
-                final isSel = DateUtils.isSameDay(date, _selectedDate);
+                final isSelected = DateUtils.isSameDay(date, _selectedDate);
+                final isToday = DateUtils.isSameDay(date, DateTime.now());
+
                 return InkWell(
                   onTap: () {
                     setState(() => _selectedDate = date);
@@ -352,17 +263,27 @@ class _KalenderBlattState extends State<KalenderBlatt> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     decoration: BoxDecoration(
-                      color: isSel
+                      color: isSelected
                           ? theme.colorScheme.primary
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
+                      border: isToday && !isSelected
+                          ? Border.all(
+                              color: theme.colorScheme.primary,
+                              width: 1,
+                            )
+                          : null,
                     ),
                     child: Center(
                       child: Text(
                         "$d",
                         style: TextStyle(
-                          color: isSel ? Colors.white : null,
-                          fontWeight: isSel ? FontWeight.bold : null,
+                          color: isSelected
+                              ? Colors.white
+                              : theme.colorScheme.onSurface,
+                          fontWeight: isSelected || isToday
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ),

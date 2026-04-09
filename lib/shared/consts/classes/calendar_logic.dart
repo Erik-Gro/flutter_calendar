@@ -14,6 +14,16 @@ class CalendarLogic {
     "November",
     "Dezember",
   ];
+
+  static List<String> get weekdaysHeader => [
+    "Mo",
+    "Di",
+    "Mi",
+    "Do",
+    "Fr",
+    "Sa",
+    "So",
+  ];
   static bool isHoliday(DateTime d) {
     final y = d.year;
     final e = _easter(y);
