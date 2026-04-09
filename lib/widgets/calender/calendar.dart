@@ -1,36 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_calendar/controllers/themeController/theme_controller.dart';
+import 'dart:convert';
 import 'package:flutter_calendar/shared/consts/classes/calendar_logic.dart';
 import 'package:flutter_calendar/shared/consts/classes/theme_manager.dart';
 import 'package:flutter_calendar/shared/consts/enums/app_theme.dart';
-import 'package:flutter_calendar/widgets/calender/calendar.dart';
+import 'package:flutter_calendar/widgets/theme_picker.dart/themepicker.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:intl/intl.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final themeController = ThemeController();
-  await themeController.loadInitialSettings();
-
-  runApp(MyApp(themeController: themeController));
-}
-
-class MyApp extends StatelessWidget {
+class KalenderBlatt extends StatefulWidget {
   final ThemeController themeController;
-  const MyApp({super.key, required this.themeController});
+  const KalenderBlatt({super.key, required this.themeController});
 
   @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: themeController,
-      builder: (context, _) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeManager.getThemeData(themeController.currentTheme),
-        home: KalenderBlatt(themeController: themeController),
-      ),
-    );
-  }
+  State<KalenderBlatt> createState() => _KalenderBlattState();
 }
 
 class _KalenderBlattState extends State<KalenderBlatt> {
@@ -80,122 +63,126 @@ class _KalenderBlattState extends State<KalenderBlatt> {
   }
 
   void _showThemePicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => ListenableBuilder(
-        listenable: widget.themeController,
-        builder: (ctx, _) {
-          final ctrl = widget.themeController;
-          final theme = ThemeManager.getThemeData(ctrl.currentTheme);
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Design",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          "Auto-Close",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        Switch(
-                          value: ctrl.autoClosePreference,
-                          onChanged: (val) => ctrl.setAutoClose(val),
-                          activeThumbColor: theme.colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: AppTheme.values.map((t) {
-                    final isSel = t == ctrl.currentTheme;
-                    final d = ThemeManager.themeDetails[t]!;
-                    return InkWell(
-                      onTap: () {
-                        ctrl.setTheme(t);
-                        if (ctrl.autoClosePreference) Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 95,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: theme.cardTheme.color,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSel
-                                ? theme.colorScheme.primary
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: d['color'],
-                              radius: 18,
-                              child: Icon(
-                                d['icon'],
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              d['name'],
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+    showThemePickerBottomSheet(context, widget.themeController);
   }
+
+  // void _showThemePicker() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     backgroundColor: Colors.transparent,
+  //     isScrollControlled: true,
+  //     builder: (ctx) => ListenableBuilder(
+  //       listenable: widget.themeController,
+  //       builder: (ctx, _) {
+  //         final ctrl = widget.themeController;
+  //         final theme = ThemeManager.getThemeData(ctrl.currentTheme);
+  //         return AnimatedContainer(
+  //           duration: const Duration(milliseconds: 300),
+  //           padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+  //           decoration: BoxDecoration(
+  //             color: theme.scaffoldBackgroundColor,
+  //             borderRadius: const BorderRadius.vertical(
+  //               top: Radius.circular(28),
+  //             ),
+  //           ),
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Container(
+  //                 width: 40,
+  //                 height: 4,
+  //                 decoration: BoxDecoration(
+  //                   color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+  //                   borderRadius: BorderRadius.circular(2),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 20),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   Text(
+  //                     "Design",
+  //                     style: TextStyle(
+  //                       fontSize: 22,
+  //                       fontWeight: FontWeight.bold,
+  //                       color: theme.colorScheme.primary,
+  //                     ),
+  //                   ),
+  //                   Row(
+  //                     children: [
+  //                       const Text(
+  //                         "Auto-Close",
+  //                         style: TextStyle(fontSize: 12),
+  //                       ),
+  //                       Switch(
+  //                         value: ctrl.autoClosePreference,
+  //                         onChanged: (val) => ctrl.setAutoClose(val),
+  //                         activeThumbColor: theme.colorScheme.primary,
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //               const SizedBox(height: 16),
+  //               Wrap(
+  //                 spacing: 10,
+  //                 runSpacing: 10,
+  //                 children: AppTheme.values.map((t) {
+  //                   final isSel = t == ctrl.currentTheme;
+  //                   final d = ThemeManager.themeDetails[t]!;
+  //                   return InkWell(
+  //                     onTap: () {
+  //                       ctrl.setTheme(t);
+  //                       if (ctrl.autoClosePreference) Navigator.pop(context);
+  //                     },
+  //                     borderRadius: BorderRadius.circular(16),
+  //                     child: AnimatedContainer(
+  //                       duration: const Duration(milliseconds: 200),
+  //                       width: 95,
+  //                       padding: const EdgeInsets.symmetric(vertical: 12),
+  //                       decoration: BoxDecoration(
+  //                         color: theme.cardTheme.color,
+  //                         borderRadius: BorderRadius.circular(16),
+  //                         border: Border.all(
+  //                           color: isSel
+  //                               ? theme.colorScheme.primary
+  //                               : Colors.transparent,
+  //                           width: 2,
+  //                         ),
+  //                       ),
+  //                       child: Column(
+  //                         children: [
+  //                           CircleAvatar(
+  //                             backgroundColor: d['color'],
+  //                             radius: 18,
+  //                             child: Icon(
+  //                               d['icon'],
+  //                               size: 16,
+  //                               color: Colors.white,
+  //                             ),
+  //                           ),
+  //                           const SizedBox(height: 8),
+  //                           Text(
+  //                             d['name'],
+  //                             style: TextStyle(
+  //                               fontSize: 11,
+  //                               fontWeight: FontWeight.w600,
+  //                               color: theme.colorScheme.onSurface,
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   );
+  //                 }).toList(),
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -438,4 +425,3 @@ class _KalenderBlattState extends State<KalenderBlatt> {
     );
   }
 }
-
